@@ -34,13 +34,15 @@ scoring = accuracy_score
 
 verbose = True
 
-#best_params, best_score = GridSearchCustom(df, num_splits, estimator, param_grid, scoring, 'Hazardous', verbose)
+if __name__ == '__main__':
 
-best_params, best_score = RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, 25)
+    #best_params, best_score = GridSearchCustom(df, num_splits, estimator, param_grid, scoring, 'Hazardous', verbose)
 
-#best_params, best_score = RandomSearchWithGridSearch(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, 10, 25)
+    best_params, best_score = RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, 25)
 
-#best_params, best_score = RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, 10, 15)
+    #best_params, best_score = RandomSearchWithGridSearch(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, 10, 25)
 
-print("Best Parameters:", best_params)
-print("Best Score:", best_score)
+    #best_params, best_score = RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, 10, 15)
+
+    print("Best Parameters:", best_params)
+    print("Best Score:", best_score)
