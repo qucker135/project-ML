@@ -67,14 +67,14 @@ def target_function(
     params_dict = ndarray_to_params_dict(params_vector)
     params_dict["random_state"] = 42
     params_dict["n_estimators"] = N_ESTIMATORS
-    print(f"{params_dict=}")
+    # print(f"{params_dict=}")
     clf = model(**params_dict)
     results = cross_val_score(
         clf,
         X,
         y,
-        cv=5,
+        cv=10,
         scoring=make_scorer(matthews_corrcoef)
     )
-    print(f"{results=}")
+    # print(f"{results=}")
     return results.mean()
