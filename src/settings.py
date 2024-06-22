@@ -4,6 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import matthews_corrcoef, make_scorer
 from sklearn.model_selection import cross_val_score
 from format_helpers import ndarray_to_params_dict
+from statsmodels.stats.contingency_tables import mcnemar
 
 N_ESTIMATORS = 10
 
@@ -78,3 +79,35 @@ def target_function(
     )
     # print(f"{results=}")
     return results.mean()
+
+def get_contingency_table(Y, ground_truth, model_1, model_2):
+    contingency_table = [[0, 0], [0, 0]]
+    Y_ = Y.copy()
+    model_1_correct = Y_.apply(lambda row: int(row[ground_truth] == row[model_1]), axis=1)
+    model_2_correct = Y_.apply(lambda row: int(row[ground_truth] == row[model_2]), axis=1)
+    contingency_table[0][0] = Y_.apply(
+        lambda row: int(row[model_1] == 0 and row[model_2] == 0), axis=1
+    ).sum()
+    contingency_table[0][1] = Y_.apply(
+        lambda row: int(row[model_1] == 0 and row[model_2] == 1), axis=1
+    ).sum()
+    contingency_table[1][0] = Y_.apply(
+        lambda row: int(row[model_1] == 1 and row[model_2] == 0), axis=1
+    ).sum()
+    contingency_table[1][1] = Y_.apply(
+        lambda row: int(row[model_1] == 1 and row[model_2] == 1), axis=1
+    ).sum()
+    return np.array(contingency_table)
+
+def mcnemar_test(contigency_table, significance=0.05):
+    print("Contigency Table")
+    print(contigency_table)
+    test = mcnemar(contigency_table, exact=False, correction=True)
+    print("P value:", test.pvalue)
+    if test.pvalue > significance:
+        print("Reject Null Hypotheis")
+        print("Conclusion: Model have statistically different error rate")
+    else:
+        print("Accept Null Hypotheis")
+        print("Conclusion: Model do not have statistically different error rate")
+    return test.pvalue

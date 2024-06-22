@@ -34,20 +34,20 @@ param_ranges = {
 }
 
 
-num_splits = 5
+num_splits = 10
 
 scoring = matthews_corrcoef
 
 verbose = True
 
 if __name__ == '__main__':
-    # best_params, best_score = GridSearchCustom(df, num_splits, estimator, param_grid, scoring, 'Hazardous', verbose)
+    # best_params, best_score, predictions_nemar_con, predictions_y_con = GridSearchCustom(df, num_splits, estimator, param_grid, scoring, 'Hazardous', verbose)
 
-    # best_params, best_score = RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, 15)
+    # best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, n_iter=25)
 
-    best_params, best_score = RandomSearchWithGridSearch(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, 3, 25)
+    best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchWithGridSearch(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, num_grid_points=3, n_iter_random=25)
 
-    # best_params, best_score = RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, 10, 15)
+    # best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, n_iter_inital=10, n_iter_refined=15)
 
     print("Best Parameters:", best_params)
     print("Best Score:", best_score)
