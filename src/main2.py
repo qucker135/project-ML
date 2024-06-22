@@ -12,10 +12,14 @@ from Genetic import Genetic
 from settings import domain
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-DATASET_PATH = ROOT_DIR / 'datasets' / 'nasa.csv'
+DATASET_PATH_NASA = ROOT_DIR / 'datasets' / 'nasa.csv'
+# https://www.kaggle.com/datasets/ritwikb3/heart-disease-statlog?resource=download
+DATASET_PATH_HEART = ROOT_DIR / 'datasets' / 'Heart_disease_statlog.csv'
+# https://www.kaggle.com/datasets/matinmahmoudi/sales-and-satisfaction?select=Sales_without_NaNs_v1.3.csv
+DATASET_PATH_SALES = ROOT_DIR / 'datasets' / 'Sales_without_NaNs_v1.3.csv'
 
 # Dropped because they are identifiers, duplicate data or single value columns:
-dropped_columns = [
+dropped_columns_nasa = [
     'Neo Reference ID',
     'Name',
     'Est Dia in KM(min)',
@@ -36,16 +40,33 @@ dropped_columns = [
 ]
 
 # Potentially unnecessary columns:
-unnecessary_columns = [
+unnecessary_columns_nasa = [
     'Absolute Magnitude',
     'Orbit Determination Date',
 ]
 
 if __name__ == "__main__":
-    df = pd.read_csv(DATASET_PATH)
+    query_dataset = input("Which dataset do you want to use? (nasa | heart | sales):")
+    if query_dataset == 'nasa':
+        df = pd.read_csv(DATASET_PATH_NASA)
+        df_X = df.drop('Hazardous', axis=1)
+        df_y = df['Hazardous']
+    elif query_dataset == 'heart':
+        df = pd.read_csv(DATASET_PATH_HEART)
+        df_X = df.drop('target', axis=1)
+        df_y = df['target']
+    elif query_dataset == 'sales':
+        df = pd.read_csv(DATASET_PATH_SALES)
+        df.replace({'Yes': 1, 'No': 0, 'Control': 0, 'Treatment': 1, 'High Value': 2, 'Medium Value': 1, 'Low Value': 0}, inplace=True)
+        print(df.head())
+        df_X = df.drop('Purchase_Made', axis=1)
+        df_y = df['Purchase_Made']
+    else:
+        raise ValueError("Invalid dataset")
+
+    # df = pd.read_csv(DATASET_PATH_NASA)
     # split X, y
-    df_X = df.drop('Hazardous', axis=1)
-    df_y = df['Hazardous']
+    
 
     query = input("What do you want to do? (bayes/genetic):")
 
@@ -57,8 +78,9 @@ if __name__ == "__main__":
         df_X_test = df_X.iloc[test_index]
         df_y_test = df_y.iloc[test_index]
 
-        df_X_train.drop(columns=(dropped_columns+unnecessary_columns), inplace=True)
-        df_X_test.drop(columns=(dropped_columns+unnecessary_columns), inplace=True)    
+        if query_dataset == 'nasa':
+            df_X_train.drop(columns=(dropped_columns_nasa+unnecessary_columns_nasa), inplace=True)
+            df_X_test.drop(columns=(dropped_columns_nasa+unnecessary_columns_nasa), inplace=True)
 
         if 'bayes' in query:
             bayes_opt1 = BayesOpt(
@@ -81,6 +103,8 @@ if __name__ == "__main__":
             print(clf1.score(df_X_test, df_y_test))
             print(matthews_corrcoef(df_y_test, clf1.predict(df_X_test)))
             print((clf1.predict(df_X_test) == df_y_test).value_counts())
+
+            # score
 
         if 'genetic' in query:
             genetic = Genetic(
@@ -141,4 +165,6 @@ if __name__ == "__main__":
             print(clf2.score(df_X_test, df_y_test))
             print(matthews_corrcoef(df_y_test, clf2.predict(df_X_test)))
             print((clf2.predict(df_X_test) == df_y_test).value_counts())
+
+            # score
     
