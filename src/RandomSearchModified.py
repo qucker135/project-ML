@@ -1,6 +1,9 @@
 import copy
 
-from sklearn.metrics import matthews_corrcoef
+import numpy as np
+from matplotlib import pyplot as plt
+from numpy import interp
+from sklearn.metrics import matthews_corrcoef, roc_curve, auc
 from sklearn.model_selection import RepeatedStratifiedKFold
 from RandomSearch import sample_from_range
 from gridsearch_randomsearch_helpers import dropped_columns, unnecessary_columns
@@ -8,6 +11,15 @@ from gridsearch_randomsearch_helpers import dropped_columns, unnecessary_columns
 def RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, target_column, verbose, n_iter_initial, n_iter_refined, refine_range_percentage=0.2):
     df_X = df.drop(columns=[target_column])
     df_y = df[target_column]
+
+    tprs = []
+    aucs = []
+    mean_fpr = np.linspace(0, 1, 100)
+    fold_counter = 0
+    plt.figure(figsize=(10, 10), dpi=400)
+
+    predictions_nemar = []
+    predictions_y_test = []
 
     kf = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=42)
     for (train_index, test_index) in kf.split(df_X, df_y):
@@ -84,6 +96,7 @@ def RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, targe
 
                         estimator.fit(X_train, y_train)
 
+
                         y_pred = estimator.predict(X_val)
 
                         score = scoring(y_val, y_pred)
@@ -102,8 +115,55 @@ def RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, targe
 
         estimator.set_params(**best_params)
         estimator.fit(df_X_train, df_y_train)
+
+        y_prob = estimator.predict_proba(df_X_test)[:, 1]
+
         print(estimator.score(df_X_test, df_y_test))
-        print(matthews_corrcoef(df_ygit _test, estimator.predict(df_X_test)))
+        print(matthews_corrcoef(df_y_test, estimator.predict(df_X_test)))
         print((estimator.predict(df_X_test) == df_y_test).value_counts())
 
-    return best_params, best_score
+        predictions_nemar.append(estimator.predict(df_X_test))
+        predictions_y_test.append(df_y_test)
+
+        fpr, tpr, thresholds = roc_curve(df_y_test, y_prob)
+
+        tprs.append(interp(mean_fpr, fpr, tpr))
+        tprs[-1][0] = 0.0
+        roc_auc = auc(fpr, tpr)
+        aucs.append(roc_auc)
+        print(fold_counter, tpr, fpr)
+        plt.plot(fpr, tpr, lw=1, alpha=0.3,
+                 label='ROC fold %d (AUC = %0.2f)' % (fold_counter, roc_auc))
+
+        fold_counter += 1
+
+    plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r',
+             label='Chance', alpha=.8)
+
+    mean_tpr = np.mean(tprs, axis=0)
+    mean_tpr[-1] = 1.0
+    mean_auc = auc(mean_fpr, mean_tpr)
+    std_auc = np.std(aucs)
+    plt.plot(mean_fpr, mean_tpr, color='b',
+             label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
+             lw=2, alpha=.8)
+
+    std_tpr = np.std(tprs, axis=0)
+    tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
+    tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
+    plt.fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=.2,
+                     label=r'$\pm$ 1 std. dev.')
+
+    plt.xlim([-0.01, 1.01])
+    plt.ylim([-0.01, 1.01])
+    plt.xlabel('False Positive Rate', fontsize=18)
+    plt.ylabel('True Positive Rate', fontsize=18)
+    plt.title('Cross-Validation ROC of RandomSearchModified', fontsize=18)
+    plt.legend(loc="lower right", prop={'size': 5})
+    plt.savefig(fname='AUC-ROC_RSM')
+    plt.show()
+
+    predictions_nemar_con = np.concatenate(predictions_nemar)
+    predictions_y_con = np.concatenate(predictions_y_test)
+
+    return best_params, best_score, predictions_nemar_con, predictions_y_con
