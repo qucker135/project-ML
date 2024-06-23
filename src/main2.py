@@ -124,7 +124,7 @@ def main(query, query_dataset='nasa'):
     # query = input("What do you want to do? (bayes | genetic):")
 
     # RepeatedStratifiedKFold here
-    rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=42)
+    rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=42)
     accuracies = []
     precisions = []
     f1s = []

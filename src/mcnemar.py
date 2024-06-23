@@ -8,6 +8,7 @@ from RandomSearch import RandomSearchCustom
 from RandomGridCombined import RandomSearchWithGridSearch
 from RandomSearchModified import RandomSearchModified
 from GridAndRandomTesting2 import df, num_splits, estimator, param_grid, scoring, verbose, param_ranges
+import pickle
 
 # ROOT_DIR = Path(__file__).resolve().parent.parent
 # DATASET_PATH_NASA = ROOT_DIR / 'datasets' / 'nasa.csv'
@@ -16,9 +17,9 @@ from GridAndRandomTesting2 import df, num_splits, estimator, param_grid, scoring
 # # https://www.kaggle.com/datasets/matinmahmoudi/sales-and-satisfaction?select=Sales_without_NaNs_v1.3.csv
 # DATASET_PATH_SALES = ROOT_DIR / 'datasets' / 'Sales_without_NaNs_v1.3.csv'
 
-# algs = ['genetic', 'random', 'random_mod', 'random_grid', 'bayes', 'grid']
+algs = ['genetic', 'random', 'bayes', 'grid', 'random_mod', 'random_grid']
 
-algs = ['random', 'random_mod']
+# algs = ['random', 'genetic']
 
 if __name__ == "__main__":
     p_values = {}
@@ -32,12 +33,16 @@ if __name__ == "__main__":
         elif model == 'grid':
             best_params, best_score, predictions_nemar_con, predictions_y_con = GridSearchCustom(df, num_splits, estimator, param_grid, scoring, 'Hazardous', verbose)
         elif model == 'random':
-            best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, n_iter=2) # !!!!!!!!!!!!!!
+            best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, n_iter=25)
         elif model == 'random_mod':
             best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, n_iter_initial=10, n_iter_refined=15)
         elif model == 'random_grid':
             best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchWithGridSearch(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, num_grid_points=3, n_iter_random=25)
 
+        with open(f'{model}_predictions_nemar_con.pkl', 'wb') as f:
+            pickle.dump(predictions_nemar_con, f)
+        with open(f'{model}_predictions_y_con.pkl', 'wb') as f:
+            pickle.dump(predictions_y_con, f)
         nemar_predictions.append(predictions_nemar_con)
         y_predictions.append(predictions_y_con)
 

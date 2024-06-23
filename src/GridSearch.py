@@ -6,7 +6,7 @@ from numpy import interp
 from sklearn.model_selection import RepeatedStratifiedKFold
 from gridsearch_randomsearch_helpers import dropped_columns, unnecessary_columns
 from sklearn.metrics import matthews_corrcoef, roc_curve, auc
-
+import datetime
 
 def GridSearchCustom(df, num_splits, estimator, param_grid, scoring, target_column, verbose):
     param_values = param_grid.values()
@@ -15,7 +15,7 @@ def GridSearchCustom(df, num_splits, estimator, param_grid, scoring, target_colu
     df_X = df.drop(columns=[target_column])
     df_y = df[target_column]
 
-    kf = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=42)
+    kf = RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=42)
 
     tprs = []
     aucs = []
@@ -112,7 +112,7 @@ def GridSearchCustom(df, num_splits, estimator, param_grid, scoring, target_colu
     plt.ylabel('True Positive Rate', fontsize=18)
     plt.title('Cross-Validation ROC of GridSearch', fontsize=18)
     plt.legend(loc="lower right", prop={'size': 5})
-    plt.savefig(fname='AUC-ROC_GS')
+    plt.savefig(fname=f'AUC-ROC_GS-nasa-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}')
     plt.show()
 
     predictions_nemar_con = np.concatenate(predictions_nemar)

@@ -13,13 +13,23 @@ df = pd.read_csv('datasets/nasa.csv')
 
 estimator = RandomForestClassifier()
 
+# param_grid = {
+#     'n_estimators': [10],
+#     'max_depth': [9, 10, 11],
+#     'min_samples_split': [2, 5, 10, 20],
+#     'min_samples_leaf': [1, 3, 6],
+#     'max_features': [2, 5, 10, 20],
+#     'max_leaf_nodes': [500, 750, 1000],
+#     'min_impurity_decrease': [0, 0.001]
+# }
+
 param_grid = {
     'n_estimators': [10],
-    'max_depth': [9, 10, 11],
-    'min_samples_split': [2, 5, 10, 20],
+    'max_depth': [9, 11],
+    'min_samples_split': [2, 10, 20],
     'min_samples_leaf': [1, 3, 6],
-    'max_features': [2, 5, 10, 20],
-    'max_leaf_nodes': [500, 750, 1000],
+    'max_features': [2, 10, 20],
+    'max_leaf_nodes': [500, 750],
     'min_impurity_decrease': [0, 0.001]
 }
 

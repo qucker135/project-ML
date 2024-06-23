@@ -7,6 +7,7 @@ from sklearn.metrics import matthews_corrcoef, roc_curve, auc
 from sklearn.model_selection import RepeatedStratifiedKFold
 from RandomSearch import sample_from_range
 from gridsearch_randomsearch_helpers import dropped_columns, unnecessary_columns
+import datetime
 
 def RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, target_column, verbose, n_iter_initial, n_iter_refined, refine_range_percentage=0.2):
     df_X = df.drop(columns=[target_column])
@@ -21,7 +22,7 @@ def RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, targe
     predictions_nemar = []
     predictions_y_test = []
 
-    kf = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=42)
+    kf = RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=42)
     for (train_index, test_index) in kf.split(df_X, df_y):
         top_results = []
         best_score = None
@@ -160,7 +161,7 @@ def RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, targe
     plt.ylabel('True Positive Rate', fontsize=18)
     plt.title('Cross-Validation ROC of RandomSearchModified', fontsize=18)
     plt.legend(loc="lower right", prop={'size': 5})
-    plt.savefig(fname='AUC-ROC_RSM')
+    plt.savefig(fname=f'AUC-ROC_RMS-nasa-{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}')
     plt.show()
 
     predictions_nemar_con = np.concatenate(predictions_nemar)
