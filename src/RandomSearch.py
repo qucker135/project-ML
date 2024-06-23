@@ -3,9 +3,10 @@ import random
 import numpy as np
 from matplotlib import pyplot as plt
 from numpy import interp
-from sklearn.metrics import matthews_corrcoef, roc_curve, auc
+from sklearn.metrics import matthews_corrcoef, roc_curve, auc, accuracy_score, precision_score, f1_score, recall_score
 from sklearn.model_selection import RepeatedStratifiedKFold
 import datetime
+import pickle
 
 from gridsearch_randomsearch_helpers import dropped_columns, unnecessary_columns
 
@@ -24,6 +25,11 @@ def RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, target_
     df_y = df[target_column]
 
     kf = RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=42)
+    accuracies = []
+    precisions = []
+    f1s = []
+    sensitivities = []
+    matthews_corrcoef_scores = []
 
     tprs = []
     aucs = []
@@ -84,9 +90,29 @@ def RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, target_
 
         y_prob = estimator.predict_proba(df_X_test)[:, 1]
 
+        y_pred = estimator.predict(df_X_test)
+
         print(estimator.score(df_X_test, df_y_test))
-        print(matthews_corrcoef(df_y_test, estimator.predict(df_X_test)))
-        print((estimator.predict(df_X_test) == df_y_test).value_counts())
+        print(matthews_corrcoef(df_y_test, y_pred))
+        print((y_pred == df_y_test).value_counts())
+
+        accuracy = accuracy_score(df_y_test, y_pred)
+        precision = precision_score(df_y_test, y_pred)
+        f1 = f1_score(df_y_test, y_pred)
+        sensitivity = recall_score(df_y_test, y_pred)
+        matthews_corrcoef_score = matthews_corrcoef(df_y_test, y_pred)
+
+        print(f"Accuracy: {accuracy}")
+        print(f"Precision: {precision}")
+        print(f"F1 Score: {f1}")
+        print(f"Sensitivity (Recall): {sensitivity}")
+        print(f"Matthews: {matthews_corrcoef_score}")
+
+        accuracies.append(accuracy)
+        precisions.append(precision)
+        f1s.append(f1)
+        sensitivities.append(sensitivity)
+        matthews_corrcoef_scores.append(matthews_corrcoef_score)
 
         predictions_nemar.append(estimator.predict(df_X_test))
         predictions_y_test.append(df_y_test)
@@ -131,5 +157,14 @@ def RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, target_
 
     predictions_nemar_con = np.concatenate(predictions_nemar)
     predictions_y_con = np.concatenate(predictions_y_test)
+
+    with open(f'RS_nasa_scores.pkl', 'wb') as pickle_file:
+        pickle.dump({
+            'avg_accuracy': sum(accuracies) / len(accuracies),
+            'avg_precision': sum(precisions) / len(precisions),
+            'avg_f1': sum(f1s) / len(f1s),
+            'avg_sensitivity': sum(sensitivities) / len(sensitivities),
+            'avg_matthews': sum(matthews_corrcoef_scores) / len(matthews_corrcoef_scores),
+        }, pickle_file)
 
     return best_params, best_score, predictions_nemar_con, predictions_y_con

@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from numpy import interp
 from sklearn.metrics import matthews_corrcoef, roc_curve, auc
+import pickle
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATASET_PATH_NASA = ROOT_DIR / 'datasets' / 'nasa.csv'
@@ -307,6 +308,15 @@ def main(query, query_dataset='nasa'):
     print(f"Average F1 Score: {sum(f1s) / len(f1s)}")
     print(f"Average Sensitivity (Recall): {sum(sensitivities) / len(sensitivities)}")
     print(f"Average Matthews: {sum(matthews_corrcoef_scores) / len(matthews_corrcoef_scores)}")
+
+    with open(f'{query}_{query_dataset}_scores.pkl', 'wb') as pickle_file:
+        pickle.dump({
+            'avg_accuracy': sum(accuracies) / len(accuracies),
+            'avg_precision': sum(precisions) / len(precisions),
+            'avg_f1': sum(f1s) / len(f1s),
+            'avg_sensitivity': sum(sensitivities) / len(sensitivities),
+            'avg_matthews': sum(matthews_corrcoef_scores) / len(matthews_corrcoef_scores),
+        }, pickle_file)
 
     plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r',
              label='Chance', alpha=.8)

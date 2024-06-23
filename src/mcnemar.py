@@ -17,9 +17,11 @@ import pickle
 # # https://www.kaggle.com/datasets/matinmahmoudi/sales-and-satisfaction?select=Sales_without_NaNs_v1.3.csv
 # DATASET_PATH_SALES = ROOT_DIR / 'datasets' / 'Sales_without_NaNs_v1.3.csv'
 
-algs = ['genetic', 'random', 'bayes', 'grid', 'random_mod', 'random_grid']
+# algs = ['genetic', 'random', 'bayes', 'grid', 'random_mod', 'random_grid']
 
-# algs = ['random', 'genetic']
+# algs = ['random_grid']
+
+algs = ['genetic', 'random', 'bayes', 'grid', 'random_grid']
 
 if __name__ == "__main__":
     p_values = {}
