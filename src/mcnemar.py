@@ -16,7 +16,9 @@ from GridAndRandomTesting2 import df, num_splits, estimator, param_grid, scoring
 # # https://www.kaggle.com/datasets/matinmahmoudi/sales-and-satisfaction?select=Sales_without_NaNs_v1.3.csv
 # DATASET_PATH_SALES = ROOT_DIR / 'datasets' / 'Sales_without_NaNs_v1.3.csv'
 
-algs = ['bayes', 'genetic', 'grid', 'random', 'random_mod', 'random_grid']
+# algs = ['genetic', 'random', 'random_mod', 'random_grid', 'bayes', 'grid']
+
+algs = ['random', 'random_mod']
 
 if __name__ == "__main__":
     p_values = {}
@@ -30,16 +32,16 @@ if __name__ == "__main__":
         elif model == 'grid':
             best_params, best_score, predictions_nemar_con, predictions_y_con = GridSearchCustom(df, num_splits, estimator, param_grid, scoring, 'Hazardous', verbose)
         elif model == 'random':
-            best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, n_iter=25)
+            best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchCustom(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, n_iter=2) # !!!!!!!!!!!!!!
         elif model == 'random_mod':
-            best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, n_iter_inital=10, n_iter_refined=15)
+            best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchModified(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, n_iter_initial=10, n_iter_refined=15)
         elif model == 'random_grid':
             best_params, best_score, predictions_nemar_con, predictions_y_con = RandomSearchWithGridSearch(df, num_splits, estimator, param_ranges, scoring, 'Hazardous', verbose, num_grid_points=3, n_iter_random=25)
 
         nemar_predictions.append(predictions_nemar_con)
         y_predictions.append(predictions_y_con)
 
-    for i, j in itertools.combinations(range(len(algs)), 2):
+    for i, j in itertools.combinations_with_replacement(range(len(algs)), 2):
         Y_ = pd.DataFrame(y_predictions[i], columns=['Hazardous'])
         Y_[algs[i]] = np.where(nemar_predictions[i] > 0.5, 1, 0)
         Y_[algs[j]] = np.where(nemar_predictions[j] > 0.5, 1, 0)
